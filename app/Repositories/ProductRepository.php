@@ -3,42 +3,24 @@
 namespace App\Repositories;
 
 use App\Models\Product;
-use App\Repositories\Interfaces\ProductRepositoryInterface;
-use Ramsey\Collection\Collection;
+use App\Repositories\Interfaces\BaseRepositoryInterface;
 
-class ProductRepository implements ProductRepositoryInterface
+
+class ProductRepository implements BaseRepositoryInterface
 {
-    private $products;
 
-    public function __construct(Product $products)
+    public function getAllProducts()
     {
-        $this->products = $products;
-    }
-
-    public function getAllProducts(): Collection
-    {
-        return $this->products->getAllProducts();
+        return Product::all();
     }
 
     public function getProductById($id)
     {
-        return $this->products->find($id);
-    }
-
-    public function createProduct(array $data)
-    {
-        return $this->products->create($data);
+        return Product::query()->find($id);
     }
 
     public function updateProduct($id, array $data)
     {
-        $product = $this->products->find($id); //Здесь я выбираю по id нужный мне продукт и помещаю его в переменную
-        $product->update($data); //Здесь я обновляю данные выбранного мною продукта
-        return $product; //Продукт я обновил, а значит мне нужно вернуть его через return
-    }
 
-    public function deleteProduct($id): void
-    {
-        $this->products->destroy($id);
     }
 }

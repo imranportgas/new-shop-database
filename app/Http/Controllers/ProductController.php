@@ -2,53 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Repositories\ProductRepository;
 use App\Services\ProductService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+
 
 class ProductController extends Controller
 {
+    private $productRepository;
     private $productService;
 
-    public function __construct(ProductService $productService)
+    public function __construct(ProductRepository $productRepository, ProductService $productService)
     {
+        $this->productRepository = $productRepository;
         $this->productService = $productService;
     }
 
     public function index()
     {
-        $product = $this->productService->all();
+        $products = Product::all();
+
+        return view('index', ['products' => $products]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return redirect()->route('prod');
+        $products = $this->productService->create($request->all());
+        return view('index', ['products' => $products]);
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->all();
-        $product = $this->productService->create($data);
-        return redirect()->route('products.index');
-    }
-
-    public function edit($id)
-    {
-        $product = $this->productService->find($id);
-        return view('products.edit', ['products' => $product]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $data = $request->all();
-        $product = $this->productService->update($data, $id);
-        return redirect()->route('products.update');
-    }
-
-    public function destroy($id): RedirectResponse
+    public function delete($id)
     {
         $this->productService->delete($id);
-        return redirect()->route('products.index');
+
+        return redirect()->route('index')->with('success', 'Продукт успешно удалён');
     }
 
 }

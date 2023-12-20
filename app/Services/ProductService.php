@@ -5,39 +5,42 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Repositories\ProductRepository;
-use Ramsey\Collection\Collection;
+use Illuminate\Support\Facades\Validator;
+
 
 class ProductService
 {
-    private ProductRepository $productRepository;
-
+    private $productRepository;
     public function __construct(ProductRepository $productRepository)
     {
         $this->productRepository = $productRepository;
     }
 
-    public function all(): Collection
+    public function validateModel($data)
     {
-        return $this->productRepository->getAllProducts();
+        return Validator::make($data, [
+           'name' => 'required|string',
+           'price' => 'required|numeric',
+           'description' => 'required|string'
+        ]);
+    }
+    public function create($data)
+    {
+        $validator = $this->validateModel($data);
+
+        if($validator->fails()){
+            return response()->json(['errors' => $validator->errors()->all()], 422);
+        }
+
+        $product = Product::create($data);
+        return $product;
     }
 
-    public function find($id): Product
+    public function delete($id)
     {
-        return $this->productRepository->getProductById($id);
-    }
+        $product = Product::findOrFail($id);
+        $product->delete();
 
-    public function create(array $data): Product
-    {
-        return $this->productRepository->createProduct($data);
-    }
-
-    public function update(array $data, $id):Product
-    {
-        return $this->productRepository->updateProduct($data, $id);
-    }
-
-    public function delete($id): void
-    {
-        $this->productRepository->deleteProduct($id);
+        return redirect()->route('index')->with('Продукт успешно удалён');
     }
 }
